@@ -1,0 +1,67 @@
+# Using Mongosh
+
+## Partie 1 :
+
+`test> show dbs
+TitanicDB  120.00 KiB
+admin       40.00 KiB
+config      60.00 KiB
+local       72.00 KiB
+poke       136.00 KiB
+`
+
+`test> use testDB
+switched to db testDB
+`
+
+`testDB> db.createCollection("testCollection")
+{ ok: 1 }
+`
+
+`testDB> show collections
+testCollection
+`
+
+`testDB> db.testCollection.insertOne({name: "test", value: 1})
+{
+  acknowledged: true,
+  insertedId: ObjectId('68625aec634adba502baa8b9')
+}
+`
+
+`testDB> db.testCollection.find()
+[
+  { _id: ObjectId('68625aec634adba502baa8b9'), name: 'test', value: 1 }
+]
+`
+
+`testDB> db.testCollection.updateOne({name: "test"}, {$inc: {value: 1}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+`
+
+`testDB> db.testCollection.deleteOne({name: "test"})
+{ acknowledged: true, deletedCount: 1 }
+`
+
+`testDB> db.testCollection.drop()
+true
+`
+
+`testDB> db.dropDatabase()
+{ ok: 1, dropped: 'testDB' }
+test> show dbs
+TitanicDB  120.00 KiB
+admin       40.00 KiB
+config      96.00 KiB
+local       72.00 KiB
+poke       136.00 KiB
+
+`
+
+
