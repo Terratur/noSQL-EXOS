@@ -22,6 +22,8 @@ switched to db testDB
 testCollection
 `
 
+## Partie 2
+
 `testDB> db.testCollection.insertOne({name: "test", value: 1})
 {
   acknowledged: true,
@@ -48,6 +50,8 @@ testCollection
 `testDB> db.testCollection.deleteOne({name: "test"})
 { acknowledged: true, deletedCount: 1 }
 `
+
+## Partie 3
 
 `testDB> db.testCollection.drop()
 true
