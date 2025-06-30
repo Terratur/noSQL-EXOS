@@ -1,0 +1,171 @@
+# Manipulation de documents imbriqués
+
+## Partie 1
+
+`test> use schoolDB
+switched to db schoolDB
+schoolDB> db.createCollection("classes")
+{ ok: 1 }
+schoolDB> show collections
+classes
+`
+
+## Partie 2
+
+`schoolDB> db.classes.insertOne({
+...   "className": "Mathematics 101",
+...   "professor": "John Doe",
+...   "students": [
+...     {
+...       "name": "Charlie",
+...       "age": 21,
+...       "grades": {
+...         "midterm": 79,
+...         "final": 92
+...       }
+...     },
+...     {
+...       "name": "Dylan",
+...       "age": 23,
+...       "grades": {
+...         "midterm": 79,
+...         "final": 87
+...       }
+...     }
+...   ]
+... })
+... 
+{
+  acknowledged: true,
+  insertedId: ObjectId('68625fba1101638558baa8b9')
+}
+schoolDB> db.classes.find()
+[
+  {
+    _id: ObjectId('68625fba1101638558baa8b9'),
+    className: 'Mathematics 101',
+    professor: 'John Doe',
+    students: [
+      { name: 'Charlie', age: 21, grades: { midterm: 79, final: 92 } },
+      { name: 'Dylan', age: 23, grades: { midterm: 79, final: 87 } }
+    ]
+  }
+]
+`
+## Partie 3
+
+`schoolDB> db.classes.find({
+...   "students.grades.final": { $gt: 85 }
+... })
+... 
+[
+  {
+    _id: ObjectId('68625fba1101638558baa8b9'),
+    className: 'Mathematics 101',
+    professor: 'John Doe',
+    students: [
+      { name: 'Charlie', age: 21, grades: { midterm: 79, final: 92 } },
+      { name: 'Dylan', age: 23, grades: { midterm: 79, final: 87 } }
+    ]
+  }
+]
+`
+
+`db.classes.updateOne(
+  { className: "Mathematics 101" },
+  { $push: { students: {
+      name: "Bob",
+      age: 22,
+      grades: {
+        midterm: 75,
+        final: 85
+      }
+    }}
+  }
+)
+
+schoolDB> db.classes.find({ "students.name": "Bob" })
+... 
+[
+  {
+    _id: ObjectId('68625fba1101638558baa8b9'),
+    className: 'Mathematics 101',
+    professor: 'John Doe',
+    students: [
+      { name: 'Charlie', age: 21, grades: { midterm: 79, final: 92 } },
+      { name: 'Dylan', age: 23, grades: { midterm: 79, final: 87 } },
+      { name: 'Bob', age: 22, grades: { midterm: 75, final: 85 } }
+    ]
+  }
+]
+`
+ça marche, trop fort OwO
+
+## Part 4
+
+`schoolDB> db.classes.updateOne(
+...   { className: "Mathematics 101" },
+...   { $push: {
+...       students: {
+...         name: "Charlie",
+...         age: 23,
+...         grades: {
+...           midterm: 82,
+...           final: 88
+...         }
+...       }
+...     }
+...   }
+... )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+`
+ez
+Je vais delete Charlie c'est plus simple
+`schoolDB> db.classes.updateOne(
+...   { className: "Mathematics 101" },
+...   { $pull: { students: { name: "Charlie" } } }
+... )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+schoolDB> db.classes.find({ "students.name": "Charlie" })
+`
+
+## Partie 5 
+
+`schoolDB> db.classes.aggregate([
+...   { $match: { className: "Mathematics 101" } },
+...   { $unwind: "$students" },
+...   { $group: {
+...       _id: "$className",
+...       averageFinal: { $avg: "$students.grades.final" }
+...     }
+...   }
+... ])
+[ { _id: 'Mathematics 101', averageFinal: 86 } ]
+`
+
+`schoolDB> db.classes.aggregate([
+...   { $match: { className: "Mathematics 101" } },
+...   { $unwind: "$students" },
+...   { $group: {
+...       _id: "$className",
+...       maxFinal: { $max: "$students.grades.final" }
+...     }
+...   }
+... ])
+
+[ { _id: 'Mathematics 101', maxFinal: 87 } ]
+`
+
+Et voilà
